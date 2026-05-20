@@ -1,0 +1,19 @@
+.{
+    .name = .projecteuler,
+    .version = "0.0.0",
+    .fingerprint = 0x48e95a3bf21c4ec8,
+    .minimum_zig_version = "0.16.0",
+
+    .dependencies = .{
+        .primeZ = .{
+            .url = "git+https://github.com/sch0rschi/primeZ#4dae22337a3ba04d1b8bc411554101facc5dd87b",
+            .hash = "primeZ-0.0.0-R5sfTY57AAAD4PLglcUUzcr-KHi9UJlyyn_ID0IQX6Ph",
+        },
+    },
+
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}
