@@ -5,7 +5,7 @@ const LIMIT: usize = 20;
 
 pub fn solve_0005(gpa: std.mem.Allocator, _: std.mem.Allocator) u32 {
     const allocator = gpa;
-    var sieve = primeZ.sieve.SegmentedSieve.init(allocator, LIMIT) catch unreachable;
+    var sieve = primeZ.sieve.QuerySieve.init(allocator, LIMIT) catch unreachable;
     defer sieve.deinit();
     const primes = sieve.getPrimes(allocator) catch unreachable;
     defer allocator.free(primes);
