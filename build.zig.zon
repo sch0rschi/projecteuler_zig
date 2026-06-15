@@ -6,8 +6,8 @@
 
     .dependencies = .{
         .primeZ = .{
-            .url = "git+https://github.com/sch0rschi/primeZ#4dae22337a3ba04d1b8bc411554101facc5dd87b",
-            .hash = "primeZ-0.0.0-R5sfTY57AAAD4PLglcUUzcr-KHi9UJlyyn_ID0IQX6Ph",
+            .url = "git+https://github.com/sch0rschi/primeZ#aaa52c245968342800a18262522326b10c683d02",
+            .hash = "primeZ-0.0.0-R5sfTRaHAAABXk7pSdWJZZT-CikZEAigTeKxOFyQpD_8",
         },
     },
 

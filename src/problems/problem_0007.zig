@@ -9,6 +9,8 @@ pub fn solve_0007(gpa: std.mem.Allocator, _: std.mem.Allocator) usize {
     const upperBound = nthPrimeUpperBound(N_TH);
     var sieve = SegmentedSieve.init(allocator, upperBound) catch unreachable;
     defer sieve.deinit();
+    const primes = sieve.getPrimes(allocator) catch unreachable;
+    defer allocator.free(primes);
 
-    return sieve.primes[N_TH-1];
+    return primes[N_TH-1];
 }

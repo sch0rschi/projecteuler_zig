@@ -4,12 +4,15 @@ const primeZ = @import("primeZ");
 const LIMIT: usize = 20;
 
 pub fn solve_0005(gpa: std.mem.Allocator, _: std.mem.Allocator) u32 {
-    var sieve = primeZ.sieve.SegmentedSieve.init(gpa, LIMIT) catch unreachable;
+    const allocator = gpa;
+    var sieve = primeZ.sieve.SegmentedSieve.init(allocator, LIMIT) catch unreachable;
     defer sieve.deinit();
+    const primes = sieve.getPrimes(allocator) catch unreachable;
+    defer allocator.free(primes);
 
     var result: u32 = 1;
 
-    for (sieve.primes) |p| {
+    for (primes) |p| {
         var power: usize = p;
 
         // Find largest power of p <= LIMIT
