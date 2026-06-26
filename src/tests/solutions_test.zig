@@ -47,6 +47,11 @@ test "solve_0010" {
     try std.testing.expectEqual(@as(usize, 142913828922), result);
 }
 
+test "solve_0014" {
+    const result = solutions.problem_0014.solve_0014(std.testing.allocator, std.testing.allocator);
+    try std.testing.expectEqual(@as(usize, 837799), result);
+}
+
 test "solve_0078" {
     const result = solutions.problem_0078.solve_0078(std.testing.allocator, std.testing.allocator);
     try std.testing.expectEqual(@as(usize, 55374), result);
