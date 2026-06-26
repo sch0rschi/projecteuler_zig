@@ -1,13 +1,11 @@
 const std = @import("std");
-const primeZ = @import("primeZ");
+const IteratingSieve = @import("primeZ").IteratingSieve;
 
 const LIMIT: usize = 20;
 
 pub fn solve_0005(gpa: std.mem.Allocator, _: std.mem.Allocator) u32 {
     const allocator = gpa;
-    var sieve = primeZ.sieve.QuerySieve.init(allocator, LIMIT) catch unreachable;
-    defer sieve.deinit();
-    const primes = sieve.getPrimes(allocator) catch unreachable;
+    const primes = IteratingSieve.getPrimes(allocator, LIMIT) catch unreachable;
     defer allocator.free(primes);
 
     var result: u32 = 1;
