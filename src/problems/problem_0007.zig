@@ -1,6 +1,5 @@
 const std = @import("std");
 const IteratingSieve = @import("primeZ").IteratingSieve;
-const nthPrimeUpperBound = @import("primeZ").Estimates.nthPrimeUpperBound;
 
 const N_TH: usize = 10001;
 

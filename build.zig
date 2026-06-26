@@ -15,68 +15,63 @@ pub fn build(b: *std.Build) void {
         .imports = &.{ .{ .name = "libs", .module = lib_mod }, .{ .name = "primeZ", .module = primez_mod } },
     });
 
-    addTests(b, lib_mod, solutions_mod, primez_mod);
-    addBenches(b, lib_mod, solutions_mod, primez_mod);
-}
-
-fn addTests(b: *std.Build, lib_mod: *std.Build.Module, solutions_mod: *std.Build.Module, primez_mod: *std.Build.Module) void {
-    const test_step = b.step("test", "Run all tests");
-    const install_test_step = b.step("install_tests", "Install test binaries to zig-out/tests/");
-
-    const all_tests = [_]struct { name: []const u8, path: []const u8 }{
-        .{ .name = "test_solutions", .path = "src/tests/solutions_test.zig" },
+    const imports = &[_]std.Build.Module.Import{
+        .{ .name = "libs", .module = lib_mod },
+        .{ .name = "solutions", .module = solutions_mod },
+        .{ .name = "primeZ", .module = primez_mod },
     };
 
-    inline for (all_tests) |s| {
-        const t = b.addTest(.{
-            .name = s.name,
-            .root_module = b.createModule(.{
-                .root_source_file = b.path(s.path),
-                .target = b.graph.host,
-                .optimize = .Debug,
-                .imports = &.{
-                    .{ .name = "libs", .module = lib_mod },
-                    .{ .name = "solutions", .module = solutions_mod },
-                    .{ .name = "primeZ", .module = primez_mod },
-                },
-            }),
-        });
-
-        b.installArtifact(t);
-        install_test_step.dependOn(&b.addInstallArtifact(t, .{
-            .dest_dir = .{ .override = .{ .custom = "tests" } },
-        }).step);
-        test_step.dependOn(&b.addRunArtifact(t).step);
-    }
+    addRunnable(b, .test_, "test_solutions", "src/tests/solutions_test.zig", imports);
+    addRunnable(b, .bench, "bench_solutions", "src/benches/solutions_bench.zig", imports);
 }
 
-fn addBenches(b: *std.Build, lib_mod: *std.Build.Module, solutions_mod: *std.Build.Module, primez_mod: *std.Build.Module) void {
-    const bench_step = b.step("bench", "Run all benchmarks");
+// ─────────────────────────────────────────────────────────────────────────────
+// TEST / BENCH RUNNER
+// ─────────────────────────────────────────────────────────────────────────────
 
-    const all_benches = [_]struct { name: []const u8, path: []const u8 }{
-        .{ .name = "bench_solutions", .path = "src/benches/solutions_bench.zig" },
+/// Tests and benches only differ in how the module gets built (b.addTest vs.
+/// b.addExecutable) and which optimize mode + top-level step they attach to.
+/// Everything else — module wiring, install step, run step — is identical,
+/// so it's handled here once instead of in two near-duplicate functions.
+fn addRunnable(
+    b: *std.Build,
+    kind: enum { test_, bench },
+    comptime name: []const u8,
+    comptime path: []const u8,
+    imports: []const std.Build.Module.Import,
+) void {
+    const root_module = b.createModule(.{
+        .root_source_file = b.path(path),
+        .target = b.graph.host,
+        .optimize = if (kind == .test_) .Debug else .ReleaseFast,
+        .imports = imports,
+    });
+
+    const artifact = switch (kind) {
+        .test_ => b.addTest(.{ .name = name, .root_module = root_module }),
+        .bench => b.addExecutable(.{ .name = name, .root_module = root_module }),
     };
+    b.installArtifact(artifact);
 
-    inline for (all_benches) |s| {
-        const exe = b.addExecutable(.{
-            .name = s.name,
-            .root_module = b.createModule(.{
-                .root_source_file = b.path(s.path),
-                .target = b.graph.host,
-                .optimize = .ReleaseFast,
-                .imports = &.{
-                    .{ .name = "libs", .module = lib_mod },
-                    .{ .name = "solutions", .module = solutions_mod },
-                    .{ .name = "primeZ", .module = primez_mod },
-                },
-            }),
-        });
-        b.installArtifact(exe);
+    const run = b.addRunArtifact(artifact);
 
-        const run = b.addRunArtifact(exe);
-        b.step("bench_" ++ s.name["bench_".len..], "Run the " ++ s.name ++ " benchmark")
+    switch (kind) {
+        .test_ => {
+            const test_step = b.step("test", "Run all tests");
+            test_step.dependOn(&run.step);
+
+            const install_test_step = b.step("install_tests", "Install test binaries to zig-out/tests/");
+            install_test_step.dependOn(&b.addInstallArtifact(artifact, .{
+                .dest_dir = .{ .override = .{ .custom = "tests" } },
+            }).step);
+        },
+        .bench => {
+            const bench_step = b.step("bench", "Run all benchmarks");
+            bench_step.dependOn(&run.step);
+
+            b.step("bench_" ++ name["bench_".len..], "Run the " ++ name ++ " benchmark")
             .dependOn(&run.step);
-        bench_step.dependOn(&run.step);
+        },
     }
 }
 
