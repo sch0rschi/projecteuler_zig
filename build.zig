@@ -1,13 +1,17 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
+    const target = b.standardTargetOptions(.{});
+
     generateSolutionsFile(b) catch @panic("failed generating solutions");
 
     const lib_mod = b.addModule("libs", .{
         .root_source_file = b.path("src/libs/libs.zig"),
     });
 
-    const primez = b.dependency("primeZ", .{});
+    const primez = b.dependency("primeZ", .{
+        .target = target,
+    });
     const primez_mod = primez.module("primeZ");
 
     const solutions_mod = b.addModule("solutions", .{
